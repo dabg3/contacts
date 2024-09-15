@@ -29,7 +29,7 @@ def init(config_module, api_module) -> None:
 sg.theme("gray gray gray")
 
 # window and layout are set at runtime because
-# elements (button, text, input)  instances cannot be reused.
+# elements (button, text, input) instances cannot be reused.
 _main_layout = None
 _main_window = None
 _editor_layout = None
@@ -116,14 +116,14 @@ def _handle_main_window_events(event, values) -> None:
             _init_editor_window()
         case "Edit":
             if not _get_selected_contact():
-                sg.popup("Error: No contact selected")
+                _show_not_selected_popup()
                 return
             _inserting_new = False
             _main_window.hide()
             _init_editor_window(_get_selected_contact())
         case "Remove":
             if not _get_selected_contact():
-                sg.popup("Error: No contact selected")
+                _show_not_selected_popup()
                 return
             confirm = sg.popup_yes_no(
                     "Do you really want to delete the contact?"
@@ -131,6 +131,12 @@ def _handle_main_window_events(event, values) -> None:
             if confirm == "Yes":
                 api.delete_contact(_get_selected_contact())
                 _update_contacts_table(api.get_all_contacts())
+
+
+def _show_not_selected_popup() -> None:
+    _main_window.hide()
+    sg.popup("Error: No contact selected")
+    _main_window.un_hide()
 
 
 def _handle_editor_window_events(event, values) -> None:
