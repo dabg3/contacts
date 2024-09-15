@@ -46,5 +46,7 @@ python -m contacts.main
 Package application and dependencies as a single executable file
 
 ```shell
-pyinstaller --windowed --onefile contacts/main.py
+pyinstaller --windowed --onefile contacts/contacts.py
 ```
+
+executable is located in `dist` folder
