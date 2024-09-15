@@ -21,6 +21,7 @@ def init_main_window(contacts: Sequence[Person]) -> None:
     table_entries = list(map(convert_model, contacts))
     _main_layout = [[sg.Table(table_entries,
                               headings=["name", "surname", "telephone"],
+                              select_mode=sg.TABLE_SELECT_MODE_BROWSE,
                               enable_events=True)],
                     [sg.Button('New'),
                      sg.Button('Edit'),
@@ -39,19 +40,13 @@ def convert_model(p: Person) -> Sequence[str]:
     return [p.name, p.surname, p.telephone]
 
 
-def get_selected_contact() -> Person:
-    selected_indexes = _main_layout[0][0].get()
-    # ignore multiple selection
-    return api.get_contact(selected_indexes[0]) if selected_indexes else None
-
-
 def init_editor_window(contact: Person = None) -> None:
     global _editor_window
     global _editor_layout
     values = (contact.name,
               contact.surname,
-              contact.address,
               contact.telephone,
+              contact.address,
               contact.age) if contact else ("", "", "", "", "")
     _editor_layout = [[sg.Text("Name", size=10),
                        sg.Input(default_text=values[0], key='-NAME-')],
@@ -71,42 +66,43 @@ def init_editor_window(contact: Person = None) -> None:
                                finalize=True)
 
 
-# redundant of sg.Table.get(), TODO use that instead?
-_selected_contact = None
+def get_selected_contact() -> Person:
+    selected_indexes = _main_layout[0][0].get()
+    # ignore multiple selection
+    return api.get_contact(selected_indexes[0]) if selected_indexes else None
+
+
+_inserting_new = False
 
 
 def handle_main_window_events(event, values) -> None:
-    global _selected_contact
+    global _inserting_new
     match event:
-        case 0:
-            if not values[0]:
-                return
-            _selected_contact = api.get_contact(values[0][0])
         case "New":
-            _selected_contact = None
-            _main_window.close()
+            _inserting_new = True
+            _main_window.hide()
             init_editor_window()
         case "Edit":
-            if not _selected_contact:
+            if not get_selected_contact():
                 return
-            _main_window.close()
-            init_editor_window(_selected_contact)
+            _inserting_new = False
+            _main_window.hide()
+            init_editor_window(get_selected_contact())
         case "Remove":
-            if not _selected_contact:
+            if not get_selected_contact():
                 return
-            api.delete_contact(_selected_contact)
-            _selected_contact = None
+            api.delete_contact(get_selected_contact())
             update_contacts_table(api.get_all_contacts())
 
 
 def handle_editor_window_events(event, values) -> None:
-    global _selected_contact
+    global _inserting_new
     match event:
         case "Cancel":
             _editor_window.close()
-            init_main_window(api.get_all_contacts())
+            _main_window.un_hide()
         case "Save":
-            if not _selected_contact:
+            if _inserting_new:
                 new = Person(values["-NAME-"],
                              values["-SURNAME-"],
                              values["-ADDRESS-"],
@@ -119,10 +115,10 @@ def handle_editor_window_events(event, values) -> None:
                                  values["-ADDRESS-"],
                                  values["-TELEPHONE-"],
                                  values["-AGE-"])
-                api.update_contact(_selected_contact, updated)
-                _selected_contact = updated
+                api.update_contact(get_selected_contact(), updated)
             _editor_window.close()
-            init_main_window(api.get_all_contacts())
+            update_contacts_table(api.get_all_contacts())
+            _main_window.un_hide()
 
 
 if __name__ == "__main__":
