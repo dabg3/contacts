@@ -40,6 +40,6 @@ def set_storage_path(p: str) -> None:
     global _storage_path
     if not p or not os.path.isfile(p):
         return
-    _config["persistence"]["file_storage_path"] = p
-    with open(_config_file) as file:
+    _config.set("persistence", "file_storage_path", p)
+    with open(_config_file, "w") as file:
         _config.write(file)

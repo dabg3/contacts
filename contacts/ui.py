@@ -108,6 +108,8 @@ def _handle_main_window_events(event, values) -> None:
         case "Settings":
             filepath = sg.popup_get_file("Enter path to your .txt data file:")
             _config.set_storage_path(filepath)
+            api.refresh_data()
+            _update_contacts_table(api.get_all_contacts())
         case "New":
             _inserting_new = True
             _main_window.hide()

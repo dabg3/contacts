@@ -38,6 +38,11 @@ def init(persistence_module=None) -> None:
     if not persistence_module:
         return
     _persistence = persistence_module
+    refresh_data()
+
+
+def refresh_data() -> None:
+    _contacts.clear()
     for p in _persistence.retrieve_all():
         _contacts.append(p)
 
