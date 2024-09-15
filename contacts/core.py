@@ -34,7 +34,7 @@ _contacts: list[Person] = []
 #   - insert(person)
 #   - update(old, new)
 #   - delete(person)
-def init_app_state(persistence_module=None) -> None:
+def init(persistence_module=None) -> None:
     global _persistence
     if not persistence_module:
         return
@@ -72,7 +72,8 @@ def delete_contact(p: Person) -> None:
 def get_contact(index: int) -> Person:
     # ordering of ui list and core list matches.
     # This is not good, lists should be decoupled:
-    # an identifier for Person instances is required, maybe telephone(?)
+    # instead of index, an identifier for Person instances is required.
+    # Maybe telephone(?)
     return _contacts[index]
 
 

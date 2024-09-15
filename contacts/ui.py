@@ -3,6 +3,29 @@ import PySimpleGUI as sg
 import contacts.core as api
 from contacts.core import Person
 
+_config = None
+_api = None
+
+
+def _assert_dependencies() -> None:
+    if not _config:
+        raise ValueError(
+                f"invalid config dependency in {__name__}. Did you init()?"
+                )
+    if not _api:
+        raise ValueError(
+                f"invalid api dependency in {__name__}. Did you init()?"
+                )
+
+
+def init(config_module, api_module) -> None:
+    global _config
+    global _api
+    _config = config_module
+    _api = api_module
+    _assert_dependencies()
+
+
 sg.theme("gray gray gray")
 
 # window and layout are set at runtime
@@ -80,6 +103,9 @@ _inserting_new = False
 def handle_main_window_events(event, values) -> None:
     global _inserting_new
     match event:
+        case "Settings":
+            filepath = sg.popup_get_file("Enter path to your .txt data file:")
+            _config.set_storage_path(filepath)
         case "New":
             _inserting_new = True
             _main_window.hide()
@@ -136,9 +162,8 @@ def instance_person(values) -> Person:
     return p
 
 
-if __name__ == "__main__":
-    import contacts.file_storage as persistence
-    api.init_app_state(persistence)
+def start() -> None:
+    _assert_dependencies()
     init_main_window(api.get_all_contacts())
     while True:
         window, event, values = sg.read_all_windows()
