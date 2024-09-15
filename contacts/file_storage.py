@@ -25,5 +25,9 @@ def insert(p: Person) -> None:
     return
 
 
+def update(old: Person, new: Person):
+    return
+
+
 def delete(p: Person) -> None:
     return

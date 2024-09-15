@@ -3,8 +3,6 @@ from typing import Sequence
 
 class Person(object):
 
-    _initialized = False
-
     def __init__(self,
                  name: str,
                  surname: str,
@@ -20,7 +18,8 @@ class Person(object):
 
     def __setattr__(self, name, value):
         # DON'T allow assignments after instantiation
-        if self._initialized:
+        # enforce updates via update_contact(old, new)
+        if hasattr(self, "_initialized"):
             return
         object.__setattr__(self, name, value)
 
@@ -29,7 +28,8 @@ _persistence = None
 _contacts: list[Person] = []
 
 
-# dependency injection, persistence modules should implement the same interface
+# dependency injection
+# persistence modules MUST expose the same interface
 def init_app_state(persistence_module=None) -> None:
     global _persistence
     if not persistence_module:
@@ -52,8 +52,11 @@ def add_contact(p: Person) -> None:
     _contacts.append(p)
 
 
-def update_contact(old: Person, new: Person):
-    return
+def update_contact(old: Person, new: Person) -> None:
+    if _persistence:
+        _persistence.update(old, new)
+    i = _contacts.index(old)
+    _contacts[i] = new
 
 
 def delete_contact(p: Person) -> None:
@@ -65,6 +68,9 @@ def delete_contact(p: Person) -> None:
 
 
 def get_contact(index: int) -> Person:
+    # ordering of ui list and core list matches.
+    # This is not good, lists should be decoupled:
+    # an identifier for Person instances is required i.e telephone(?)
     return _contacts[index]
 
 

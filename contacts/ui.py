@@ -11,6 +11,8 @@ _main_window = None
 _editor_layout = None
 _editor_window = None
 
+# TODO: use element.update() instead of closing and recreating the window
+
 
 def init_main_window(contacts: Sequence[Person]) -> None:
     global _main_window
@@ -31,21 +33,24 @@ def convert_model(p: Person) -> Sequence[str]:
     return [p.name, p.surname, p.telephone]
 
 
-def init_editor_window(contact: tuple[str, str, str, str, str] = None) -> None:
+def init_editor_window(contact: Person = None) -> None:
     global _editor_window
     global _editor_layout
-    if not contact or len(contact) != 5:
-        contact = ("", "", "", "", "")
+    values = (contact.name,
+              contact.surname,
+              contact.address,
+              contact.telephone,
+              contact.age) if contact else ("", "", "", "", "")
     _editor_layout = [[sg.Text("Name", size=10),
-                       sg.Input(default_text=contact[0], key='-NAME-')],
+                       sg.Input(default_text=values[0], key='-NAME-')],
                       [sg.Text("Surname", size=10),
-                       sg.Input(default_text=contact[1], key='-SURNAME-')],
+                       sg.Input(default_text=values[1], key='-SURNAME-')],
                       [sg.Text("Telephone", size=10),
-                       sg.Input(default_text=contact[2], key='-TELEPHONE-')],
+                       sg.Input(default_text=values[2], key='-TELEPHONE-')],
                       [sg.Text("Address", size=10),
-                       sg.Input(default_text=contact[3], key='-ADDRESS-')],
+                       sg.Input(default_text=values[3], key='-ADDRESS-')],
                       [sg.Text("Age", size=10),
-                       sg.Input(default_text=contact[4], key='-AGE-')],
+                       sg.Input(default_text=values[4], key='-AGE-')],
                       [sg.Button('Save'),
                        sg.Button('Cancel')]]
     _editor_window = sg.Window('Editor',
@@ -54,6 +59,7 @@ def init_editor_window(contact: tuple[str, str, str, str, str] = None) -> None:
                                finalize=True)
 
 
+# redundant of sg.Table.get(), TODO use that instead?
 _selected_contact = None
 
 
@@ -70,14 +76,18 @@ def handle_main_window_events(event, values) -> None:
             if not _selected_contact:
                 return
             _main_window.close()
-            init_editor_window((_selected_contact.name,
-                                _selected_contact.surname,
-                                _selected_contact.telephone,
-                                _selected_contact.address,
-                                _selected_contact.age))
+            init_editor_window(_selected_contact)
+        case "Remove":
+            if not _selected_contact:
+                return
+            api.delete_contact(_selected_contact)
+            _selected_contact = None
+            _main_window.close()
+            init_main_window(api.get_all_contacts())
 
 
 def handle_editor_window_events(event, values) -> None:
+    global _selected_contact
     match event:
         case "Cancel":
             _editor_window.close()
@@ -97,6 +107,7 @@ def handle_editor_window_events(event, values) -> None:
                                  values["-TELEPHONE-"],
                                  values["-AGE-"])
                 api.update_contact(_selected_contact, updated)
+                _selected_contact = updated
             _editor_window.close()
             init_main_window(api.get_all_contacts())
 
