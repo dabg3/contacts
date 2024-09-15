@@ -114,15 +114,21 @@ def _handle_main_window_events(event, values) -> None:
             _init_editor_window()
         case "Edit":
             if not _get_selected_contact():
+                sg.popup("Error: No contact selected")
                 return
             _inserting_new = False
             _main_window.hide()
             _init_editor_window(_get_selected_contact())
         case "Remove":
             if not _get_selected_contact():
+                sg.popup("Error: No contact selected")
                 return
-            api.delete_contact(_get_selected_contact())
-            _update_contacts_table(api.get_all_contacts())
+            confirm = sg.popup_yes_no(
+                    "Do you really want to delete the contact?"
+                    )
+            if confirm == "Yes":
+                api.delete_contact(_get_selected_contact())
+                _update_contacts_table(api.get_all_contacts())
 
 
 def _handle_editor_window_events(event, values) -> None:
