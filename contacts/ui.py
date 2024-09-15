@@ -11,6 +11,7 @@ _main_window = None
 _editor_layout = None
 _editor_window = None
 
+
 # TODO: use element.update() instead of closing and recreating the window
 
 
@@ -29,8 +30,19 @@ def init_main_window(contacts: Sequence[Person]) -> None:
                              finalize=True)
 
 
+def update_contacts_table(contacts: Sequence[Person]) -> None:
+    table_entries = list(map(convert_model, contacts))
+    _main_layout[0][0].update(table_entries)
+
+
 def convert_model(p: Person) -> Sequence[str]:
     return [p.name, p.surname, p.telephone]
+
+
+def get_selected_contact() -> Person:
+    selected_indexes = _main_layout[0][0].get()
+    # ignore multiple selection
+    return api.get_contact(selected_indexes[0]) if selected_indexes else None
 
 
 def init_editor_window(contact: Person = None) -> None:
@@ -67,6 +79,8 @@ def handle_main_window_events(event, values) -> None:
     global _selected_contact
     match event:
         case 0:
+            if not values[0]:
+                return
             _selected_contact = api.get_contact(values[0][0])
         case "New":
             _selected_contact = None
@@ -82,8 +96,7 @@ def handle_main_window_events(event, values) -> None:
                 return
             api.delete_contact(_selected_contact)
             _selected_contact = None
-            _main_window.close()
-            init_main_window(api.get_all_contacts())
+            update_contacts_table(api.get_all_contacts())
 
 
 def handle_editor_window_events(event, values) -> None:
