@@ -28,19 +28,18 @@ def init(config_module, api_module) -> None:
 
 sg.theme("gray gray gray")
 
-# window and layout are set at runtime
-# because elements (button, text, input) instances
-# cannot be reused.
+# window and layout are set at runtime because
+# elements (button, text, input)  instances cannot be reused.
 _main_layout = None
 _main_window = None
 _editor_layout = None
 _editor_window = None
 
 
-def init_main_window(contacts: Sequence[Person]) -> None:
+def _init_main_window(contacts: Sequence[Person]) -> None:
     global _main_window
     global _main_layout
-    table_entries = list(map(convert_model, contacts))
+    table_entries = list(map(_convert_model, contacts))
     menu_def = [["File", ["Settings"]]]
     _main_layout = [[sg.Menu(menu_def)],
                     [sg.Table(table_entries,
@@ -59,11 +58,11 @@ def init_main_window(contacts: Sequence[Person]) -> None:
                              finalize=True)
 
 
-def convert_model(p: Person) -> Sequence[str]:
+def _convert_model(p: Person) -> Sequence[str]:
     return [p.name, p.surname, p.telephone]
 
 
-def init_editor_window(contact: Person = None) -> None:
+def _init_editor_window(contact: Person = None) -> None:
     global _editor_window
     global _editor_layout
     values = (contact.name,
@@ -89,12 +88,12 @@ def init_editor_window(contact: Person = None) -> None:
                                finalize=True)
 
 
-def update_contacts_table(contacts: Sequence[Person]) -> None:
-    table_entries = list(map(convert_model, contacts))
+def _update_contacts_table(contacts: Sequence[Person]) -> None:
+    table_entries = list(map(_convert_model, contacts))
     _main_window.find_element("table").update(table_entries)
 
 
-def get_selected_contact() -> Person:
+def _get_selected_contact() -> Person:
     selected_indexes = _main_window.find_element("table").get()
     # ignore multiple selection
     return api.get_contact(selected_indexes[0]) if selected_indexes else None
@@ -103,7 +102,7 @@ def get_selected_contact() -> Person:
 _inserting_new = False
 
 
-def handle_main_window_events(event, values) -> None:
+def _handle_main_window_events(event, values) -> None:
     global _inserting_new
     match event:
         case "Settings":
@@ -112,40 +111,40 @@ def handle_main_window_events(event, values) -> None:
         case "New":
             _inserting_new = True
             _main_window.hide()
-            init_editor_window()
+            _init_editor_window()
         case "Edit":
-            if not get_selected_contact():
+            if not _get_selected_contact():
                 return
             _inserting_new = False
             _main_window.hide()
-            init_editor_window(get_selected_contact())
+            _init_editor_window(_get_selected_contact())
         case "Remove":
-            if not get_selected_contact():
+            if not _get_selected_contact():
                 return
-            api.delete_contact(get_selected_contact())
-            update_contacts_table(api.get_all_contacts())
+            api.delete_contact(_get_selected_contact())
+            _update_contacts_table(api.get_all_contacts())
 
 
-def handle_editor_window_events(event, values) -> None:
+def _handle_editor_window_events(event, values) -> None:
     global _inserting_new
     match event:
         case "Cancel":
             _editor_window.close()
             _main_window.un_hide()
         case "Save":
-            if not is_valid_input(values):
+            if not _is_valid_input(values):
                 return
-            p = instance_person(values)
+            p = _instance_person(values)
             if _inserting_new:
                 api.add_contact(p)
             else:
-                api.update_contact(get_selected_contact(), p)
+                api.update_contact(_get_selected_contact(), p)
             _editor_window.close()
-            update_contacts_table(api.get_all_contacts())
+            _update_contacts_table(api.get_all_contacts())
             _main_window.un_hide()
 
 
-def is_valid_input(values) -> bool:
+def _is_valid_input(values) -> bool:
     if not values["-NAME-"].strip():
         return False
     if not values["-SURNAME-"].strip():
@@ -155,7 +154,7 @@ def is_valid_input(values) -> bool:
     return True
 
 
-def instance_person(values) -> Person:
+def _instance_person(values) -> Person:
     age = int(values["-AGE-"]) if values["-AGE-"].strip() else None
     p = Person(values["-NAME-"].strip(),
                values["-SURNAME-"].strip(),
@@ -167,13 +166,13 @@ def instance_person(values) -> Person:
 
 def start() -> None:
     _assert_dependencies()
-    init_main_window(api.get_all_contacts())
+    _init_main_window(api.get_all_contacts())
     while True:
         window, event, values = sg.read_all_windows()
         if window == _main_window:
             if event == sg.WIN_CLOSED:
                 break
-            handle_main_window_events(event, values)
+            _handle_main_window_events(event, values)
         else:
-            handle_editor_window_events(event, values)
+            _handle_editor_window_events(event, values)
     _main_window.close()
