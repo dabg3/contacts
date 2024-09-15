@@ -38,7 +38,7 @@ pip install -r requirements.txt
 ## Run
 
 ```shell
-python -m contacts.main
+python -m contacts.contacts
 ```
 
 ## Build fat executable
@@ -46,7 +46,8 @@ python -m contacts.main
 Package application and dependencies as a single executable file
 
 ```shell
-pyinstaller --windowed --onefile contacts/contacts.py
+mkdir build && cd build
+pyinstaller --windowed --onefile ../contacts/contacts.py
 ```
 
-executable is located in `dist` folder
+executable is located in `build/dist` folder
