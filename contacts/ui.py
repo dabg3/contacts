@@ -3,6 +3,8 @@ import PySimpleGUI as sg
 import contacts.core as api
 from contacts.core import Person
 
+sg.theme("gray gray gray")
+
 # window and layout are set at runtime
 # because elements (button, text, input) instances
 # cannot be reused.
@@ -17,8 +19,11 @@ def init_main_window(contacts: Sequence[Person]) -> None:
     global _main_layout
     table_entries = list(map(convert_model, contacts))
     _main_layout = [[sg.Table(table_entries,
-                              headings=["name", "surname", "telephone"],
+                              headings=["Name", "Surname", "Telephone"],
                               select_mode=sg.TABLE_SELECT_MODE_BROWSE,
+                              auto_size_columns=False,
+                              cols_justification=["l", "l", "l"],
+                              col_widths=[15, 15, 15],
                               enable_events=True)],
                     [sg.Button('New'),
                      sg.Button('Edit'),
@@ -40,11 +45,11 @@ def init_editor_window(contact: Person = None) -> None:
               contact.telephone,
               contact.address,
               contact.age) if contact else ("", "", "", "", "")
-    _editor_layout = [[sg.Text("Name", size=10),
+    _editor_layout = [[sg.Text("Name*", size=10),
                        sg.Input(default_text=values[0], key='-NAME-')],
-                      [sg.Text("Surname", size=10),
+                      [sg.Text("Surname*", size=10),
                        sg.Input(default_text=values[1], key='-SURNAME-')],
-                      [sg.Text("Telephone", size=10),
+                      [sg.Text("Telephone*", size=10),
                        sg.Input(default_text=values[2], key='-TELEPHONE-')],
                       [sg.Text("Address", size=10),
                        sg.Input(default_text=values[3], key='-ADDRESS-')],
