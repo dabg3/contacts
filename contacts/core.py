@@ -17,7 +17,7 @@ class Person(object):
         self._initialized = True
 
     def __setattr__(self, name, value):
-        # DON'T allow assignments after instantiation
+        # DON'T allow assignments after instantiation,
         # enforce updates via update_contact(old, new)
         if hasattr(self, "_initialized"):
             return
@@ -29,7 +29,11 @@ _contacts: list[Person] = []
 
 
 # dependency injection
-# persistence modules MUST expose the same interface
+# persistence modules MUST expose the same interface:
+#   - retrieve_all()
+#   - insert(person)
+#   - update(old, new)
+#   - delete(person)
 def init_app_state(persistence_module=None) -> None:
     global _persistence
     if not persistence_module:
@@ -40,10 +44,8 @@ def init_app_state(persistence_module=None) -> None:
 
 
 def add_contact(p: Person) -> None:
-    # same instance
     if p in _contacts:
         return
-    # duplicate number
     for c in _contacts:
         if c.telephone == p.telephone:
             return
@@ -70,9 +72,10 @@ def delete_contact(p: Person) -> None:
 def get_contact(index: int) -> Person:
     # ordering of ui list and core list matches.
     # This is not good, lists should be decoupled:
-    # an identifier for Person instances is required i.e telephone(?)
+    # an identifier for Person instances is required, maybe telephone(?)
     return _contacts[index]
 
 
 def get_all_contacts() -> Sequence[Person]:
+    # paging can be implemented here in case of too many contacts
     return _contacts.copy()

@@ -12,9 +12,6 @@ _editor_layout = None
 _editor_window = None
 
 
-# TODO: use element.update() instead of closing and recreating the window
-
-
 def init_main_window(contacts: Sequence[Person]) -> None:
     global _main_window
     global _main_layout
@@ -29,11 +26,6 @@ def init_main_window(contacts: Sequence[Person]) -> None:
     _main_window = sg.Window('Contacts',
                              _main_layout,
                              finalize=True)
-
-
-def update_contacts_table(contacts: Sequence[Person]) -> None:
-    table_entries = list(map(convert_model, contacts))
-    _main_layout[0][0].update(table_entries)
 
 
 def convert_model(p: Person) -> Sequence[str]:
@@ -64,6 +56,11 @@ def init_editor_window(contact: Person = None) -> None:
                                _editor_layout,
                                keep_on_top=True,
                                finalize=True)
+
+
+def update_contacts_table(contacts: Sequence[Person]) -> None:
+    table_entries = list(map(convert_model, contacts))
+    _main_layout[0][0].update(table_entries)
 
 
 def get_selected_contact() -> Person:
@@ -102,23 +99,36 @@ def handle_editor_window_events(event, values) -> None:
             _editor_window.close()
             _main_window.un_hide()
         case "Save":
+            if not is_valid_input(values):
+                return
+            p = instance_person(values)
             if _inserting_new:
-                new = Person(values["-NAME-"],
-                             values["-SURNAME-"],
-                             values["-ADDRESS-"],
-                             values["-TELEPHONE-"],
-                             values["-AGE-"])
-                api.add_contact(new)
+                api.add_contact(p)
             else:
-                updated = Person(values["-NAME-"],
-                                 values["-SURNAME-"],
-                                 values["-ADDRESS-"],
-                                 values["-TELEPHONE-"],
-                                 values["-AGE-"])
-                api.update_contact(get_selected_contact(), updated)
+                api.update_contact(get_selected_contact(), p)
             _editor_window.close()
             update_contacts_table(api.get_all_contacts())
             _main_window.un_hide()
+
+
+def is_valid_input(values) -> bool:
+    if not values["-NAME-"].strip():
+        return False
+    if not values["-SURNAME-"].strip():
+        return False
+    if not values["-TELEPHONE-"].strip():
+        return False
+    return True
+
+
+def instance_person(values) -> Person:
+    age = int(values["-AGE-"]) if values["-AGE-"].strip() else None
+    p = Person(values["-NAME-"].strip(),
+               values["-SURNAME-"].strip(),
+               values["-ADDRESS-"].strip(),
+               values["-TELEPHONE-"].strip(),
+               age)
+    return p
 
 
 if __name__ == "__main__":
