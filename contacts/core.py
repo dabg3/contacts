@@ -28,7 +28,6 @@ _persistence = None
 _contacts: list[Person] = []
 
 
-# dependency injection
 # persistence modules MUST expose the same interface:
 #   - retrieve_all()
 #   - insert(person)
@@ -73,10 +72,10 @@ def get_contact(index: int) -> Person:
     # ordering of ui list and core list matches.
     # This is not good, lists should be decoupled:
     # instead of index, an identifier for Person instances is required.
-    # Maybe telephone(?)
+    # Maybe telephone(?), or synthetic id as a last resort
     return _contacts[index]
 
 
 def get_all_contacts() -> Sequence[Person]:
-    # paging can be implemented here in case of too many contacts
+    # paging options can be implemented here in case of too many contacts
     return _contacts.copy()

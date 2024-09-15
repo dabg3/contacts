@@ -1,4 +1,5 @@
 from typing import Sequence
+import os
 from contacts.core import Person
 
 _config = None
@@ -9,6 +10,9 @@ def _assert_dependencies() -> None:
         raise ValueError(
                 f"invalid config dependency in {__name__}. Did you init()?"
                 )
+    if os.path.isfile(_config.get_storage_path()):
+        return
+    open(_config.get_storage_path(), "w").close()
 
 
 def init(config_module) -> None:
