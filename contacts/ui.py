@@ -41,8 +41,11 @@ def init_main_window(contacts: Sequence[Person]) -> None:
     global _main_window
     global _main_layout
     table_entries = list(map(convert_model, contacts))
-    _main_layout = [[sg.Table(table_entries,
+    menu_def = [["File", ["Settings"]]]
+    _main_layout = [[sg.Menu(menu_def)],
+                    [sg.Table(table_entries,
                               headings=["Name", "Surname", "Telephone"],
+                              key="table",
                               select_mode=sg.TABLE_SELECT_MODE_BROWSE,
                               auto_size_columns=False,
                               cols_justification=["l", "l", "l"],
@@ -88,11 +91,11 @@ def init_editor_window(contact: Person = None) -> None:
 
 def update_contacts_table(contacts: Sequence[Person]) -> None:
     table_entries = list(map(convert_model, contacts))
-    _main_layout[0][0].update(table_entries)
+    _main_window.find_element("table").update(table_entries)
 
 
 def get_selected_contact() -> Person:
-    selected_indexes = _main_layout[0][0].get()
+    selected_indexes = _main_window.find_element("table").get()
     # ignore multiple selection
     return api.get_contact(selected_indexes[0]) if selected_indexes else None
 
