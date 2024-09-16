@@ -28,33 +28,29 @@ def init(config_module, api_module) -> None:
 
 sg.theme("gray gray gray")
 
-# window and layout are set at runtime because
-# elements (button, text, input) instances cannot be reused.
-_main_layout = None
 _main_window = None
-_editor_layout = None
 _editor_window = None
 
 
 def _init_main_window(contacts: Sequence[Person]) -> None:
     global _main_window
-    global _main_layout
     table_entries = list(map(_convert_model, contacts))
     menu_def = [["File", ["Settings"]]]
-    _main_layout = [[sg.Menu(menu_def)],
-                    [sg.Table(table_entries,
-                              headings=["Name", "Surname", "Telephone"],
-                              key="table",
-                              select_mode=sg.TABLE_SELECT_MODE_BROWSE,
-                              auto_size_columns=False,
-                              cols_justification=["l", "l", "l"],
-                              col_widths=[15, 15, 15],
-                              enable_events=True)],
-                    [sg.Button('New'),
-                     sg.Button('Edit'),
-                     sg.Button('Remove')]]
+    main_layout = [[sg.Menu(menu_def)],
+                   [sg.Table(table_entries,
+                             headings=["Name", "Surname", "Telephone"],
+                             key="table",
+                             select_mode=sg.TABLE_SELECT_MODE_BROWSE,
+                             auto_size_columns=False,
+                             cols_justification=["l", "l", "l"],
+                             col_widths=[15, 15, 15],
+                             enable_events=True,
+                             enable_click_events=True)],
+                   [sg.Button('New'),
+                    sg.Button('Edit'),
+                    sg.Button('Remove')]]
     _main_window = sg.Window('Contacts',
-                             _main_layout,
+                             main_layout,
                              finalize=True)
 
 
@@ -64,26 +60,25 @@ def _convert_model(p: Person) -> Sequence[str]:
 
 def _init_editor_window(contact: Person = None) -> None:
     global _editor_window
-    global _editor_layout
     values = (contact.name,
               contact.surname,
               contact.telephone,
               contact.address,
               contact.age) if contact else ("", "", "", "", "")
-    _editor_layout = [[sg.Text("Name*", size=10),
-                       sg.Input(default_text=values[0], key='-NAME-')],
-                      [sg.Text("Surname*", size=10),
-                       sg.Input(default_text=values[1], key='-SURNAME-')],
-                      [sg.Text("Telephone*", size=10),
-                       sg.Input(default_text=values[2], key='-TELEPHONE-')],
-                      [sg.Text("Address", size=10),
-                       sg.Input(default_text=values[3], key='-ADDRESS-')],
-                      [sg.Text("Age", size=10),
-                       sg.Input(default_text=values[4], key='-AGE-')],
-                      [sg.Button('Save'),
-                       sg.Button('Cancel')]]
+    editor_layout = [[sg.Text("Name*", size=10),
+                      sg.Input(default_text=values[0], key='-NAME-')],
+                     [sg.Text("Surname*", size=10),
+                      sg.Input(default_text=values[1], key='-SURNAME-')],
+                     [sg.Text("Telephone*", size=10),
+                      sg.Input(default_text=values[2], key='-TELEPHONE-')],
+                     [sg.Text("Address", size=10),
+                      sg.Input(default_text=values[3], key='-ADDRESS-')],
+                     [sg.Text("Age", size=10),
+                      sg.Input(default_text=values[4], key='-AGE-')],
+                     [sg.Button('Save'),
+                      sg.Button('Cancel')]]
     _editor_window = sg.Window('Editor',
-                               _editor_layout,
+                               editor_layout,
                                keep_on_top=True,
                                finalize=True)
 
