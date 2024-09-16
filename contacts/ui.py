@@ -1,6 +1,5 @@
 from typing import Sequence
 import PySimpleGUI as sg
-import contacts.core as api
 from contacts.core import Person
 
 _config = None
@@ -110,8 +109,8 @@ def _handle_main_window_events(event, values) -> None:
             filepath = sg.popup_get_file("Enter path to your .txt data file:",
                                          no_titlebar=True)
             _config.set_storage_path(filepath)
-            api.refresh_data()
-            _update_contacts_table(api.get_all_contacts())
+            _api.refresh_data()
+            _update_contacts_table(_api.get_all_contacts())
         case "New":
             _inserting_new = True
             _main_window.hide()
@@ -132,8 +131,8 @@ def _handle_main_window_events(event, values) -> None:
                     no_titlebar=True
                     )
             if confirm == "Yes":
-                api.delete_contact(_get_selected_contact())
-                _update_contacts_table(api.get_all_contacts())
+                _api.delete_contact(_get_selected_contact())
+                _update_contacts_table(_api.get_all_contacts())
 
 
 _last_header_clicked = None
@@ -152,16 +151,16 @@ def _handle_sorting(event) -> None:
     sorted_contacts = None
     match col_num_clicked:
         case 0:
-            sorted_contacts = api.get_all_contacts(lambda p: p.name.lower(),
-                                                   _reverse_ordering)
+            sorted_contacts = _api.get_all_contacts(lambda p: p.name.lower(),
+                                                    _reverse_ordering)
             _last_header_clicked = 0
         case 1:
-            sorted_contacts = api.get_all_contacts(lambda p: p.surname.lower(),
-                                                   _reverse_ordering)
+            sorted_contacts = _api.get_all_contacts(lambda p: p.surname.lower(),
+                                                    _reverse_ordering)
             _last_header_clicked = 1
         case 2:
-            sorted_contacts = api.get_all_contacts(lambda p: p.telephone,
-                                                   _reverse_ordering)
+            sorted_contacts = _api.get_all_contacts(lambda p: p.telephone,
+                                                    _reverse_ordering)
             _last_header_clicked = 2
     _update_contacts_table(sorted_contacts)
 
@@ -183,11 +182,11 @@ def _handle_editor_window_events(event, values) -> None:
                 return
             p = _instance_person(values)
             if _inserting_new:
-                api.add_contact(p)
+                _api.add_contact(p)
             else:
-                api.update_contact(_get_selected_contact(), p)
+                _api.update_contact(_get_selected_contact(), p)
             _editor_window.close()
-            _update_contacts_table(api.get_all_contacts())
+            _update_contacts_table(_api.get_all_contacts())
             _main_window.un_hide()
 
 
@@ -222,7 +221,7 @@ def start() -> None:
     global _last_header_clicked
     _assert_dependencies()
     # sort contacts by name
-    _init_main_window(api.get_all_contacts(lambda p: p.name.lower()))
+    _init_main_window(_api.get_all_contacts(lambda p: p.name.lower()))
     _last_header_clicked = 0
     while True:
         window, event, values = sg.read_all_windows()
