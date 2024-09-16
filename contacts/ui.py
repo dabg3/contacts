@@ -198,6 +198,13 @@ def _is_valid_input(values) -> bool:
         return False
     if not values["-TELEPHONE-"].strip():
         return False
+    age = values["-AGE-"].strip()
+    if not age:
+        return True
+    try:
+        int(age)
+    except ValueError:
+        return False
     return True
 
 
