@@ -99,6 +99,9 @@ _inserting_new = False
 
 def _handle_main_window_events(event, values) -> None:
     global _inserting_new
+    if isinstance(event, tuple) and event[0] == "table":
+        _handle_sorting(event)
+        return
     match event:
         case "Settings":
             filepath = sg.popup_get_file("Enter path to your .txt data file:",
@@ -128,6 +131,36 @@ def _handle_main_window_events(event, values) -> None:
             if confirm == "Yes":
                 api.delete_contact(_get_selected_contact())
                 _update_contacts_table(api.get_all_contacts())
+
+
+_last_header_clicked = None
+_reverse_ordering = False
+
+
+def _handle_sorting(event) -> None:
+    global _last_header_clicked
+    global _reverse_ordering
+    # assert header was clicked and wasn't the "row" column
+    if event[2][0] != -1 or event[2][1] == -1:
+        return
+    col_num_clicked = event[2][1]
+    _reverse_ordering = col_num_clicked == _last_header_clicked \
+        and not _reverse_ordering
+    sorted_contacts = None
+    match col_num_clicked:
+        case 0:
+            sorted_contacts = api.get_all_contacts(lambda p: p.name.lower(),
+                                                   _reverse_ordering)
+            _last_header_clicked = 0
+        case 1:
+            sorted_contacts = api.get_all_contacts(lambda p: p.surname.lower(),
+                                                   _reverse_ordering)
+            _last_header_clicked = 1
+        case 2:
+            sorted_contacts = api.get_all_contacts(lambda p: p.telephone,
+                                                   _reverse_ordering)
+            _last_header_clicked = 2
+    _update_contacts_table(sorted_contacts)
 
 
 def _show_not_selected_popup() -> None:
@@ -176,8 +209,11 @@ def _instance_person(values) -> Person:
 
 
 def start() -> None:
+    global _last_header_clicked
     _assert_dependencies()
-    _init_main_window(api.get_all_contacts())
+    # sort contacts by name
+    _init_main_window(api.get_all_contacts(lambda p: p.name.lower()))
+    _last_header_clicked = 0
     while True:
         window, event, values = sg.read_all_windows()
         if window == _main_window:

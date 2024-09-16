@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Callable, Any
 
 
 class Person(object):
@@ -81,6 +81,9 @@ def get_contact(index: int) -> Person:
     return _contacts[index]
 
 
-def get_all_contacts() -> Sequence[Person]:
+def get_all_contacts(sort_field_supplier: Callable[[], Any] = None,
+                     reverse: bool = False) -> Sequence[Person]:
     # paging options can be implemented here in case of too many contacts
-    return _contacts.copy()
+    list = _contacts.copy()
+    return sorted(list, key=sort_field_supplier, reverse=reverse) \
+        if sort_field_supplier else list
