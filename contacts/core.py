@@ -73,14 +73,6 @@ def delete_contact(p: Person) -> None:
     _contacts.remove(p)
 
 
-def get_contact(index: int) -> Person:
-    # ordering of ui list and core list matches.
-    # This is not good, lists should be decoupled:
-    # instead of index, an identifier for Person instances is required.
-    # Maybe telephone(?), or synthetic id as a last resort
-    return _contacts[index]
-
-
 def get_all_contacts(sort_field_supplier: Callable[[], Any] = None,
                      reverse: bool = False) -> Sequence[Person]:
     # paging options can be implemented here in case of too many contacts

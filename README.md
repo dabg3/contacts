@@ -5,7 +5,7 @@ An address book implemented in Python
 Features
 * cross-platform
 * configurable data file location `File > Settings`
-* sorting
+* sorting by click on column headers
 
 ## Dependencies
 

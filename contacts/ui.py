@@ -30,14 +30,21 @@ sg.theme("gray gray gray")
 
 _main_window = None
 _editor_window = None
+_contacts_view = None
+
+
+def _update_contacts_table(contacts: Sequence[Person]) -> None:
+    global _contacts_view
+    _contacts_view = contacts
+    table_entries = list(map(_convert_model, contacts))
+    _main_window.find_element("table").update(table_entries)
 
 
 def _init_main_window(contacts: Sequence[Person]) -> None:
     global _main_window
-    table_entries = list(map(_convert_model, contacts))
     menu_def = [["File", ["Settings"]]]
     main_layout = [[sg.Menu(menu_def)],
-                   [sg.Table(table_entries,
+                   [sg.Table([],
                              headings=["Name", "Surname", "Telephone"],
                              key="table",
                              select_mode=sg.TABLE_SELECT_MODE_BROWSE,
@@ -52,6 +59,7 @@ def _init_main_window(contacts: Sequence[Person]) -> None:
     _main_window = sg.Window('Contacts',
                              main_layout,
                              finalize=True)
+    _update_contacts_table(contacts)
 
 
 def _convert_model(p: Person) -> Sequence[str]:
@@ -83,15 +91,10 @@ def _init_editor_window(contact: Person = None) -> None:
                                finalize=True)
 
 
-def _update_contacts_table(contacts: Sequence[Person]) -> None:
-    table_entries = list(map(_convert_model, contacts))
-    _main_window.find_element("table").update(table_entries)
-
-
 def _get_selected_contact() -> Person:
     selected_indexes = _main_window.find_element("table").get()
     # ignore multiple selection
-    return api.get_contact(selected_indexes[0]) if selected_indexes else None
+    return _contacts_view[selected_indexes[0]] if selected_indexes else None
 
 
 _inserting_new = False
