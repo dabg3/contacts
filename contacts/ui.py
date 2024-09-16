@@ -106,7 +106,8 @@ def _handle_main_window_events(event, values) -> None:
     global _inserting_new
     match event:
         case "Settings":
-            filepath = sg.popup_get_file("Enter path to your .txt data file:")
+            filepath = sg.popup_get_file("Enter path to your .txt data file:",
+                                         no_titlebar=True)
             _config.set_storage_path(filepath)
             api.refresh_data()
             _update_contacts_table(api.get_all_contacts())
@@ -126,7 +127,8 @@ def _handle_main_window_events(event, values) -> None:
                 _show_not_selected_popup()
                 return
             confirm = sg.popup_yes_no(
-                    "Do you really want to delete the contact?"
+                    "Do you really want to delete the contact?",
+                    no_titlebar=True
                     )
             if confirm == "Yes":
                 api.delete_contact(_get_selected_contact())
@@ -135,14 +137,14 @@ def _handle_main_window_events(event, values) -> None:
 
 def _show_not_selected_popup() -> None:
     _main_window.hide()
-    sg.popup("Error: No contact selected")
+    sg.popup("Select a contact from the table", no_titlebar=True)
     _main_window.un_hide()
 
 
 def _handle_editor_window_events(event, values) -> None:
     global _inserting_new
     match event:
-        case "Cancel":
+        case "Cancel" | sg.WIN_CLOSED:
             _editor_window.close()
             _main_window.un_hide()
         case "Save":

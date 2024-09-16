@@ -27,7 +27,7 @@ source venv/bin/activate
 
 Activate on Windows (PowerShell)
 ```shell
-./.venv/bin/Activate.ps1
+./venv/Scripts/Activate.ps1
 ```
 
 Fetch the dependencies (except for tkinter) 
