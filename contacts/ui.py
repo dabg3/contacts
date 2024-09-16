@@ -107,7 +107,8 @@ def _handle_main_window_events(event, values) -> None:
         return
     match event:
         case "Settings":
-            filepath = sg.popup_get_file("Enter path to your .txt data file:",
+            filepath = sg.popup_get_file("Enter path to your data file:",
+                                         multiple_files=False,
                                          no_titlebar=True)
             _config.set_storage_path(filepath)
             _api.refresh_data()
