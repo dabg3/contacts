@@ -73,7 +73,7 @@ def delete_contact(p: Person) -> None:
     _contacts.remove(p)
 
 
-def get_all_contacts(sort_field_supplier: Callable[[], Any] = None,
+def get_all_contacts(sort_field_supplier: Callable[[Person], Any] = None,
                      reverse: bool = False) -> Sequence[Person]:
     # paging options can be implemented here in case of too many contacts
     list = _contacts.copy()
