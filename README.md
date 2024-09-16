@@ -2,6 +2,11 @@
 
 An address book implemented in Python
 
+Features
+* cross-platform
+* configurable data file location `File > Settings`
+* sorting
+
 ## Dependencies
 
 The application has been tested on Python 3.12, 
