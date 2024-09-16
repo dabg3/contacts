@@ -7,6 +7,13 @@ Features
 * configurable data file location `File > Settings`
 * sorting by click on column headers
 
+## Configuration
+The configuration file `config.properties` is located in
+`~/.config/contacts/` on POSIX systems, in 
+`%localappdata%/contacts/` on Windows
+
+It is managed by the application and should not be manually edited
+
 ## Dependencies
 
 The application has been tested on Python 3.12, 
@@ -18,6 +25,7 @@ Python>=3.10 may work as well.
     - Linux: install via package manager
 
 ### Install dependencies on a virtual environment
+
 Using venv is recommended to avoid polluting system packages
 
 Initialize virtual enviroment
