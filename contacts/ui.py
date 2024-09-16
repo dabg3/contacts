@@ -32,14 +32,19 @@ _editor_window = None
 _contacts_view = None
 
 
-def _update_contacts_table(contacts: Sequence[Person]) -> None:
+def _update_contacts_table() -> None:
     global _contacts_view
-    _contacts_view = contacts
-    table_entries = list(map(_convert_model, contacts))
+    _contacts_view = _api.get_all_contacts(_sort_field_supplier,
+                                           _reverse_ordering)
+    table_entries = list(map(_convert_model, _contacts_view))
     _main_window.find_element("table").update(table_entries)
 
 
-def _init_main_window(contacts: Sequence[Person]) -> None:
+def _convert_model(p: Person) -> Sequence[str]:
+    return [p.name, p.surname, p.telephone]
+
+
+def _init_main_window() -> None:
     global _main_window
     menu_def = [["File", ["Settings"]]]
     main_layout = [[sg.Menu(menu_def)],
@@ -58,11 +63,7 @@ def _init_main_window(contacts: Sequence[Person]) -> None:
     _main_window = sg.Window('Contacts',
                              main_layout,
                              finalize=True)
-    _update_contacts_table(contacts)
-
-
-def _convert_model(p: Person) -> Sequence[str]:
-    return [p.name, p.surname, p.telephone]
+    _update_contacts_table()
 
 
 def _init_editor_window(contact: Person = None) -> None:
@@ -110,7 +111,7 @@ def _handle_main_window_events(event, values) -> None:
                                          no_titlebar=True)
             _config.set_storage_path(filepath)
             _api.refresh_data()
-            _update_contacts_table(_api.get_all_contacts())
+            _update_contacts_table()
         case "New":
             _inserting_new = True
             _main_window.hide()
@@ -132,37 +133,34 @@ def _handle_main_window_events(event, values) -> None:
                     )
             if confirm == "Yes":
                 _api.delete_contact(_get_selected_contact())
-                _update_contacts_table(_api.get_all_contacts())
+                _update_contacts_table()
 
 
-_last_header_clicked = None
 _reverse_ordering = False
+_sort_field_supplier = None
 
 
 def _handle_sorting(event) -> None:
-    global _last_header_clicked
+    global _sort_field_supplier
     global _reverse_ordering
     # assert header was clicked and wasn't the "row" column
     if event[2][0] != -1 or event[2][1] == -1:
         return
     col_num_clicked = event[2][1]
-    _reverse_ordering = col_num_clicked == _last_header_clicked \
-        and not _reverse_ordering
-    sorted_contacts = None
     match col_num_clicked:
         case 0:
-            sorted_contacts = _api.get_all_contacts(lambda p: p.name.lower(),
-                                                    _reverse_ordering)
-            _last_header_clicked = 0
+            _reverse_ordering = _supply_name == _sort_field_supplier \
+                    and not _reverse_ordering
+            _sort_field_supplier = _supply_name
         case 1:
-            sorted_contacts = _api.get_all_contacts(lambda p: p.surname.lower(),
-                                                    _reverse_ordering)
-            _last_header_clicked = 1
+            _reverse_ordering = _supply_surname == _sort_field_supplier \
+                    and not _reverse_ordering
+            _sort_field_supplier = _supply_surname
         case 2:
-            sorted_contacts = _api.get_all_contacts(lambda p: p.telephone,
-                                                    _reverse_ordering)
-            _last_header_clicked = 2
-    _update_contacts_table(sorted_contacts)
+            _reverse_ordering = _supply_telephone == _sort_field_supplier \
+                    and not _reverse_ordering
+            _sort_field_supplier = _supply_telephone
+    _update_contacts_table()
 
 
 def _show_not_selected_popup() -> None:
@@ -186,7 +184,7 @@ def _handle_editor_window_events(event, values) -> None:
             else:
                 _api.update_contact(_get_selected_contact(), p)
             _editor_window.close()
-            _update_contacts_table(_api.get_all_contacts())
+            _update_contacts_table()
             _main_window.un_hide()
 
 
@@ -218,11 +216,11 @@ def _instance_person(values) -> Person:
 
 
 def start() -> None:
-    global _last_header_clicked
+    global _sort_field_supplier
     _assert_dependencies()
     # sort contacts by name
-    _init_main_window(_api.get_all_contacts(lambda p: p.name.lower()))
-    _last_header_clicked = 0
+    _sort_field_supplier = _supply_name
+    _init_main_window()
     while True:
         window, event, values = sg.read_all_windows()
         if window == _main_window:
@@ -232,3 +230,15 @@ def start() -> None:
         else:
             _handle_editor_window_events(event, values)
     _main_window.close()
+
+
+def _supply_name(p: Person) -> str:
+    return p.name.lower()
+
+
+def _supply_surname(p: Person) -> str:
+    return p.surname.lower()
+
+
+def _supply_telephone(p: Person) -> str:
+    return p.telephone
